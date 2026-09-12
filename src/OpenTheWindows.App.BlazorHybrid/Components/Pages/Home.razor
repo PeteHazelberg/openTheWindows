@@ -1,0 +1,70 @@
+﻿@page "/"
+@using OpenTheWindows.Core.Exercises
+@using OpenTheWindows.Core.Models
+@using OpenTheWindows.Core.Weather
+@inject HttpClient Http
+
+<h1>Open The Windows?</h1>
+<p><em>Blazor Hybrid prototype</em></p>
+
+<label>Zip code</label>
+<input @bind="zipCode" maxlength="5" />
+
+<p><label>Comfortable temperature range (F)</label></p>
+<input @bind="minTemp" style="width:70px" /> to <input @bind="maxTemp" style="width:70px" />
+
+<p><label>Comfortable dew point range (F)</label></p>
+<input @bind="minDewPoint" style="width:70px" /> to <input @bind="maxDewPoint" style="width:70px" />
+
+<p>
+    <button class="btn btn-primary" @onclick="CheckAsync">Check if I should open the windows</button>
+</p>
+
+<p>@resultText</p>
+
+@code {
+    private string zipCode = "";
+    private string minTemp = "60";
+    private string maxTemp = "75";
+    private string minDewPoint = "35";
+    private string maxDewPoint = "60";
+    private string resultText = "";
+
+    private async Task CheckAsync()
+    {
+        resultText = "Checking...";
+        try
+        {
+            var preferences = new ComfortPreferences
+            {
+                MinComfortableTemperatureF = float.Parse(minTemp),
+                MaxComfortableTemperatureF = float.Parse(maxTemp),
+                MinComfortableDewPointF = float.Parse(minDewPoint),
+                MaxComfortableDewPointF = float.Parse(maxDewPoint),
+            };
+
+            var geocoder = new ZippopotamGeocodingService(Http);
+            var location = await geocoder.GeocodeAsync(zipCode)
+                ?? throw new InvalidOperationException("Could not find that zip code.");
+
+            var gateway = new NwsWeatherGateway(Http);
+            var stations = await gateway.GetNearbyStationsAsync(location);
+            var station = WeatherStationSelector.SelectBestStation(stations);
+            var reading = await gateway.GetLatestObservationAsync(station);
+
+            var shouldOpen = ComfortEvaluator.ShouldOpenWindows(reading, preferences);
+
+            resultText = $"{reading.TemperatureF:F0}\u00b0F, dew point {reading.DewPointF:F0}\u00b0F (from {station.Name}). " +
+                (shouldOpen ? "Open the windows!" : "Keep the windows closed.");
+        }
+        catch (NotImplementedException)
+        {
+            resultText = "Waiting on the Exercises classes to be implemented!";
+        }
+        catch (Exception ex)
+        {
+            resultText = $"Something went wrong: {ex.Message}";
+        }
+    }
+}
+

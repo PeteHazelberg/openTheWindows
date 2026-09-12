@@ -1,5 +1,7 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/OpenTheWindows.App.BlazorHybrid/OpenTheWindows.App.BlazorHybrid.csproj" />
+    <Project Path="src/OpenTheWindows.App.Native/OpenTheWindows.App.Native.csproj" />
     <Project Path="src/OpenTheWindows.Core/OpenTheWindows.Core.csproj" />
   </Folder>
   <Folder Name="/tests/">

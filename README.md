@@ -62,17 +62,25 @@ test-driven starting point.
 
 ## MAUI app head(s)
 
-Not scaffolded yet - this machine's dotnet install needs the `maui` workload,
-which requires an **elevated (Administrator)** terminal to install:
+Two Windows-targeted prototypes exist so you can compare native XAML vs. Blazor
+Hybrid before settling on one - both reference `OpenTheWindows.Core` and wire
+up the same "check my zip code" flow:
 
 ```powershell
-dotnet workload install maui
+dotnet run --project src\OpenTheWindows.App.Native -f net10.0-windows10.0.19041.0
+dotnet run --project src\OpenTheWindows.App.BlazorHybrid -f net10.0-windows10.0.19041.0
 ```
 
-Once installed, we'll add a `src/OpenTheWindows.App/` MAUI project (Windows
-target first) referencing `OpenTheWindows.Core`. We're prototyping both a
-native-XAML UI and a Blazor Hybrid UI before settling on one, since a real iOS
-widget is native Swift regardless of this choice.
+Both currently show "Waiting on the Exercises classes to be implemented!"
+when you click the button, since `ComfortEvaluator`/`WeatherStationSelector`
+are still `NotImplementedException` stubs - that's expected until the
+`Exercises` classes are filled in.
+
+Both are currently scoped to `net10.0-windows10.0.19041.0` only; Android/iOS/
+MacCatalyst target frameworks can be added back to each `.csproj` once we're
+ready to target mobile (remember: any real iOS/iPadOS widget will still need
+a separate native Swift/WidgetKit extension regardless of which of these we
+keep).
 
 ## Requirements
 
