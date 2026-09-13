@@ -1,11 +1,9 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/OpenTheWindows.App.BlazorHybrid/OpenTheWindows.App.BlazorHybrid.csproj" />
-    <Project Path="src/OpenTheWindows.App.Native/OpenTheWindows.App.Native.csproj" />
     <Project Path="src/OpenTheWindows.Core/OpenTheWindows.Core.csproj" />
+    <Project Path="src/OpenTheWindows.App.BlazorHybrid/OpenTheWindows.App.BlazorHybrid.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/OpenTheWindows.Core.Tests.TUnit/OpenTheWindows.Core.Tests.TUnit.csproj" />
-    <Project Path="tests/OpenTheWindows.Core.Tests.XUnit/OpenTheWindows.Core.Tests.XUnit.csproj" />
   </Folder>
 </Solution>

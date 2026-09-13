@@ -3,6 +3,7 @@
 @using OpenTheWindows.Core.Models
 @using OpenTheWindows.Core.Weather
 @inject HttpClient Http
+@inject IWeatherGateway WeatherGateway
 
 <h1>Open The Windows?</h1>
 <p><em>Blazor Hybrid prototype</em></p>
@@ -47,10 +48,9 @@
             var location = await geocoder.GeocodeAsync(zipCode)
                 ?? throw new InvalidOperationException("Could not find that zip code.");
 
-            var gateway = new NwsWeatherGateway(Http);
-            var stations = await gateway.GetNearbyStationsAsync(location);
+            var stations = await WeatherGateway.GetNearbyStationsAsync(location);
             var station = WeatherStationSelector.SelectBestStation(stations);
-            var reading = await gateway.GetLatestObservationAsync(station);
+            var reading = await WeatherGateway.GetLatestObservationAsync(station);
 
             var shouldOpen = ComfortEvaluator.ShouldOpenWindows(reading, preferences);
 

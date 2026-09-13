@@ -1,149 +1,120 @@
 # openTheWindows
 
-A .NET MAUI app that answers one question: **is it a good time to open the
-windows instead of running the AC?**
+openTheWindows is a small .NET app that answers one question: is it comfortable enough outside to open the windows instead of running the AC?
 
-You give it your home's zip code and your personal comfort preferences
-(temperature and dew point ranges). It checks the current outdoor conditions
-from the free [National Weather Service API](https://www.weather.gov/documentation/services-web-api)
-(US only, no API key required) and tells you whether conditions are comfortable
-enough to open up.
+The app collects a home location, reads the user’s comfort preferences, checks the current outdoor conditions, and decides whether the windows should be open. It starts as a Windows-first Blazor Hybrid app and keeps the core weather logic separate so it can later feed a widget or background service.
 
-Initial target: Windows desktop. Longer-term goal: a background check that
-updates an iPadOS/iOS home-screen widget without the user needing to open the
-app (note: a real iOS/iPadOS widget is implemented as a separate native
-WidgetKit/SwiftUI extension that reads shared state - it can't run .NET code
-directly, but the *decision logic* below is 100% reusable regardless of what
-reads it).
+## Architecture at a glance
+
+- `src/OpenTheWindows.Core/` holds the plain C# decision logic and weather infrastructure.
+- `src/OpenTheWindows.App.BlazorHybrid/` is the Windows-first UI shell.
+- `tests/OpenTheWindows.Core.Tests.TUnit/` holds the TUnit test project.
+- `README.md` files inside each project explain that project’s purpose and tradeoffs.
+
+## Target platform and runtime notes
+
+This repo targets .NET 10 because it is the stable, beginner-friendly SDK choice for a new project. The app is intentionally designed to be AOT-conscious without making NativeAOT a day-one requirement.
+
+We keep the door open to NativeAOT by favoring explicit code, source-generated JSON, and minimal reflection-heavy runtime behavior in infrastructure code. Simplicity still wins when that would make the project harder for a beginner to understand.
 
 ## Getting your machine set up
 
-Follow these steps to prepare your Windows development machine (both ARM64 and x64 are supported).
-
 ### 1. Install the .NET 10 SDK
 
-You will need the .NET 10 SDK installed.
+Use the official .NET 10 SDK on your Windows machine.
 
-- **Via winget (recommended):**
-  ```powershell
-  winget install Microsoft.DotNet.SDK.10
-  ```
-- **Or manual installer:** Download the .NET 10 SDK from [dotnet.microsoft.com/download/dotnet/10.0](https://dotnet.microsoft.com/download/dotnet/10.0) (the installer will automatically detect whether your machine is ARM64 or x64).
+```powershell
+winget install Microsoft.DotNet.SDK.10
+```
 
-### 2. Install the .NET MAUI workload
+If you prefer a manual install, download it from:
+https://dotnet.microsoft.com/download/dotnet/10.0
 
-The MAUI workload installs the platform SDKs and templates for building desktop and mobile UI apps.
+### 2. Install the MAUI workload
 
-> **Important:** This command modifies `Program Files\dotnet` and **must be run in an elevated (Administrator) PowerShell or Windows Terminal**. If run without elevation, it will fail with an error like:
-> `Workload installation failed: ... The operation was canceled by the user.`
-
-Open PowerShell or Terminal **as Administrator** and run:
+The Blazor Hybrid app is built on MAUI, so install the workload in an Administrator PowerShell window.
 
 ```powershell
 dotnet workload install maui
 ```
 
-*(Note: If you only plan to work on the core logic exercises and unit tests in `OpenTheWindows.Core`, the MAUI workload is not strictly required—only the .NET 10 SDK is needed.)*
+This command touches the .NET installation under `Program Files\dotnet`, so it must be run elevated. If you are only working on the pure core logic and tests, the SDK alone is enough; the MAUI workload is needed for the app shell.
 
-### 3. Verify your environment
-
-In a regular PowerShell prompt, verify that .NET 10 and the MAUI workload are recognized:
+### 3. Verify the toolchain
 
 ```powershell
-dotnet --version            # Should display 10.0.xxx
-dotnet --list-sdks          # Confirms the 10.0.xxx SDK path
-dotnet workload list        # Should list 'maui' under Installed Workload Id
+dotnet --version
+dotnet --list-sdks
+dotnet workload list
 ```
 
-### 4. Set up your editor
+You should see a 10.0.x SDK and the `maui` workload installed.
 
-You can use either Visual Studio 2026 or Visual Studio Code:
+### 4. Install your editor
 
-#### Option A: Visual Studio 2026 Community (Recommended)
-1. Download and run the Visual Studio 2026 installer from [visualstudio.microsoft.com](https://visualstudio.microsoft.com/).
-2. In the installer workloads tab, check **.NET Multi-platform App UI development**.
-3. Complete installation. Opening `OpenTheWindows.slnx` will provide integrated XAML/Blazor editing, IntelliSense, test runners, and one-click debugging.
+You can use either Visual Studio 2026 or VS Code.
 
-#### Option B: Visual Studio Code
-1. Install [Visual Studio Code](https://code.visualstudio.com/).
-2. Install the following extensions from the VS Code Marketplace:
-   - **C# Dev Kit** (`ms-dotnettools.csdevkit`)
-   - **.NET MAUI** (`ms-dotnettools.dotnet-maui`)
-3. Open the `openTheWindows` repository folder. The Solution Explorer in C# Dev Kit will load the projects.
+#### Visual Studio 2026 (recommended)
 
-### 5. Clone the repository
+- Install Visual Studio 2026 Community.
+- In the installer, include the `.NET Multi-platform App UI development` workload.
+- Open `OpenTheWindows.slnx` in the repo.
 
-```powershell
-git clone https://github.com/PeteHazelberg/openTheWindows.git
-cd openTheWindows
-```
+#### VS Code
+
+Install the following extensions:
+
+- `ms-dotnettools.csdevkit`
+- `ms-dotnettools.dotnet-maui`
+
+Then open the repository root folder.
 
 ## Solution layout
 
-```
+```text
 src/
-  OpenTheWindows.Core/          Plain C# class library. No MAUI/UI dependencies.
-    Models/                     Data types: Location, ComfortPreferences, WeatherReading, WeatherStation.
-    Weather/                    Infrastructure: calls zippopotam.us (zip -> lat/lon) and
-                                 api.weather.gov (nearby stations + latest observation).
-    Exercises/                  <-- Where the hands-on learning happens. See below.
+  OpenTheWindows.Core/
+  OpenTheWindows.App.BlazorHybrid/
+
 tests/
-  OpenTheWindows.Core.Tests.XUnit/   Tests using xUnit v3 + Microsoft.Testing.Platform.
-  OpenTheWindows.Core.Tests.TUnit/   The SAME tests using TUnit + Microsoft.Testing.Platform,
-                                     so you can compare the two frameworks directly.
+  OpenTheWindows.Core.Tests.TUnit/
 ```
 
-The `Exercises` folder is intentionally left as `NotImplementedException` stubs
-with detailed doc-comment instructions - **write these yourself, without AI
-assistance**, as a way to learn C#:
+The project intentionally keeps the UI thin and the decision logic separate from the app shell. This is a better fit for a beginner project and a better foundation for future widget/background work.
 
-1. `LocationInput.ReadLocation` - prompt for and validate a US zip code.
-2. `ComfortPreferencesInput.ReadPreferences` - prompt for and validate the four
-   comfort numbers (min/max temperature, min/max dew point).
-3. `ComfortEvaluator.ShouldOpenWindows` - the core decision: is the current
-   reading within both comfortable ranges?
-4. `WeatherStationSelector.SelectBestStation` - given several nearby weather
-   stations NWS knows about, pick which one to actually query (closest wins).
+## Weather source and cache policy
 
-Each test project has a couple of `[Fact]`/`[Test]` methods already written
-as examples, plus several marked `Skip = "TODO..."` describing a scenario for
-you to implement yourself as a quick win. Once you implement the matching
-`Exercises` class, remove the `Skip` and fill in the test body.
+This repo uses the free National Weather Service API (`api.weather.gov`) and does not require an API key. The app also has a small file-backed cache wrapper that stores recent weather observations locally and refreshes them after a configurable window (default: 30 minutes).
 
-## Running things
+This avoids repeatedly hitting the external weather service during local development, unit testing, and repeated user checks.
+
+## Building and testing
 
 ```powershell
-dotnet build                                              # whole solution
-dotnet test tests/OpenTheWindows.Core.Tests.XUnit         # xUnit v3 via MTP
-dotnet test tests/OpenTheWindows.Core.Tests.TUnit         # TUnit via MTP
+dotnet build
+dotnet run --project tests\OpenTheWindows.Core.Tests.TUnit
 ```
 
-Both test projects will show real failures right now (`NotImplementedException`)
-until the `Exercises` classes are filled in - that's expected; it's a
-test-driven starting point.
+The test project contains focused scenarios for beginner learning. Some of those tests may remain intentionally skipped or incomplete while the student writes the matching logic.
 
-## MAUI app head(s)
-
-Two Windows-targeted prototypes exist so you can compare native XAML vs. Blazor
-Hybrid before settling on one - both reference `OpenTheWindows.Core` and wire
-up the same "check my zip code" flow:
+## Running the app
 
 ```powershell
-dotnet run --project src\OpenTheWindows.App.Native -f net10.0-windows10.0.19041.0
 dotnet run --project src\OpenTheWindows.App.BlazorHybrid -f net10.0-windows10.0.19041.0
 ```
 
-Both currently show "Waiting on the Exercises classes to be implemented!"
-when you click the button, since `ComfortEvaluator`/`WeatherStationSelector`
-are still `NotImplementedException` stubs - that's expected until the
-`Exercises` classes are filled in.
+## CI workflow
 
-Both are currently scoped to `net10.0-windows10.0.19041.0` only; Android/iOS/
-MacCatalyst target frameworks can be added back to each `.csproj` once we're
-ready to target mobile (remember: any real iOS/iPadOS widget will still need
-a separate native Swift/WidgetKit extension regardless of which of these we
-keep).
+The repository includes a GitHub Actions build/test workflow that runs on pushes and pull requests to `main`. The workflow builds the solution and runs the TUnit project so merge gating stays simple and fast.
 
-## Weather data source note
+## Beginner learning goals
 
-We use the free National Weather Service API (api.weather.gov). No API key or account is required, but NWS requests a descriptive `User-Agent` header identifying the application (this is already configured in `NwsWeatherGateway`).
+The project is intentionally structured so a beginner can make progress in small, clear steps:
+
+1. Read the zip code and validate it.
+2. Read comfort preferences.
+3. Decide whether the temperature and dew point are comfortable.
+4. Select the best nearby weather station.
+5. Write the unit tests that describe the intended behavior.
+
+The `Exercises/` folder is where the human learning work belongs. It is intentionally kept simple and explicit.
