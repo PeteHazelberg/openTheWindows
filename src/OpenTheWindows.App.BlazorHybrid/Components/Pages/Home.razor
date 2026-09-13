@@ -3,24 +3,56 @@
 @using OpenTheWindows.Core.Models
 @using OpenTheWindows.Core.Weather
 @inject HttpClient Http
+@inject IWeatherGateway WeatherGateway
 
-<h1>Open The Windows?</h1>
-<p><em>Blazor Hybrid prototype</em></p>
+<div class="mx-auto mt-4" style="max-width: 620px;">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4 p-md-5">
+            <h1 class="display-5 fw-bold mb-4">Open The Windows?</h1>
 
-<label>Zip code</label>
-<input @bind="zipCode" maxlength="5" />
+            <div class="mb-3">
+                <label for="zipCode" class="form-label fw-semibold">Zip code</label>
+                <input id="zipCode" class="form-control" @bind="zipCode" maxlength="5" style="max-width: 140px;" />
+            </div>
 
-<p><label>Comfortable temperature range (F)</label></p>
-<input @bind="minTemp" style="width:70px" /> to <input @bind="maxTemp" style="width:70px" />
+            <fieldset class="mb-3">
+                <legend class="form-label fw-semibold">Comfortable temperature range (F)</legend>
+                <div class="row g-2 align-items-center">
+                    <div class="col">
+                        <label for="minTemp" class="visually-hidden">Minimum comfortable temperature</label>
+                        <input id="minTemp" class="form-control" @bind="minTemp" />
+                    </div>
+                    <div class="col-auto px-0 text-body-secondary">to</div>
+                    <div class="col">
+                        <label for="maxTemp" class="visually-hidden">Maximum comfortable temperature</label>
+                        <input id="maxTemp" class="form-control" @bind="maxTemp" />
+                    </div>
+                </div>
+            </fieldset>
 
-<p><label>Comfortable dew point range (F)</label></p>
-<input @bind="minDewPoint" style="width:70px" /> to <input @bind="maxDewPoint" style="width:70px" />
+            <fieldset class="mb-3">
+                <legend class="form-label fw-semibold">Comfortable dew point range (F)</legend>
+                <div class="row g-2 align-items-center">
+                    <div class="col">
+                        <label for="minDewPoint" class="visually-hidden">Minimum comfortable dew point</label>
+                        <input id="minDewPoint" class="form-control" @bind="minDewPoint" />
+                    </div>
+                    <div class="col-auto px-0 text-body-secondary">to</div>
+                    <div class="col">
+                        <label for="maxDewPoint" class="visually-hidden">Maximum comfortable dew point</label>
+                        <input id="maxDewPoint" class="form-control" @bind="maxDewPoint" />
+                    </div>
+                </div>
+            </fieldset>
 
-<p>
-    <button class="btn btn-primary" @onclick="CheckAsync">Check if I should open the windows</button>
-</p>
+            <div class="d-grid mt-3">
+                <button type="button" class="btn btn-primary btn-lg" @onclick="CheckAsync">Check if I should open the windows</button>
+            </div>
 
-<p>@resultText</p>
+            <p class="mt-3 mb-0 fw-semibold" role="status" aria-live="polite">@resultText</p>
+        </div>
+    </div>
+</div>
 
 @code {
     private string zipCode = "";
@@ -47,10 +79,9 @@
             var location = await geocoder.GeocodeAsync(zipCode)
                 ?? throw new InvalidOperationException("Could not find that zip code.");
 
-            var gateway = new NwsWeatherGateway(Http);
-            var stations = await gateway.GetNearbyStationsAsync(location);
+            var stations = await WeatherGateway.GetNearbyStationsAsync(location);
             var station = WeatherStationSelector.SelectBestStation(stations);
-            var reading = await gateway.GetLatestObservationAsync(station);
+            var reading = await WeatherGateway.GetLatestObservationAsync(station);
 
             var shouldOpen = ComfortEvaluator.ShouldOpenWindows(reading, preferences);
 

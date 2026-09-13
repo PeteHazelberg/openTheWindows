@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore TUnit project
+        run: dotnet restore tests/OpenTheWindows.Core.Tests.TUnit/OpenTheWindows.Core.Tests.TUnit.csproj
+
+      - name: Build Core + TUnit tests
+        run: dotnet build tests/OpenTheWindows.Core.Tests.TUnit/OpenTheWindows.Core.Tests.TUnit.csproj --configuration Release --no-restore
+
+      - name: Run TUnit tests
+        run: dotnet run --project tests/OpenTheWindows.Core.Tests.TUnit/OpenTheWindows.Core.Tests.TUnit.csproj --configuration Release --no-build -- --report-trx --report-trx-filename TestResults/ci.trx --minimum-expected-tests 1
+
+  build-maui-app:
+    runs-on: windows-latest
+    needs: build-and-test
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install Windows MAUI workload
+        run: dotnet workload install maui-windows --ignore-failed-sources
+
+      - name: Restore Blazor Hybrid app for win-x64
+        run: dotnet restore src/OpenTheWindows.App.BlazorHybrid/OpenTheWindows.App.BlazorHybrid.csproj -r win-x64
+
+      - name: Build Blazor Hybrid app
+        run: dotnet build src/OpenTheWindows.App.BlazorHybrid/OpenTheWindows.App.BlazorHybrid.csproj --configuration Release -r win-x64 --no-restore

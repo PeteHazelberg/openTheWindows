@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using OpenTheWindows.Core.Weather;
 
 namespace OpenTheWindows.App.BlazorHybrid;
 
@@ -21,6 +22,13 @@ public static class MauiProgram
 			var httpClient = new HttpClient();
 			httpClient.DefaultRequestHeaders.Add("User-Agent", "OpenTheWindows-Prototype (github.com/PeteHazelberg/openTheWindows)");
 			return httpClient;
+		});
+
+		builder.Services.AddSingleton<IWeatherGateway>(sp =>
+		{
+			var httpClient = sp.GetRequiredService<HttpClient>();
+			var innerGateway = new NwsWeatherGateway(httpClient);
+			return new CachingWeatherGateway(innerGateway, TimeSpan.FromMinutes(30));
 		});
 
 #if DEBUG

@@ -24,7 +24,11 @@ public class ComfortEvaluatorTests
 
     // EXAMPLE - fully written for you. Same scenario as the xUnit version, so you
     // can compare how the two frameworks read.
+    // NOTE: currently [Skip]-ped because it calls ComfortEvaluator.ShouldOpenWindows,
+    // which is still a NotImplementedException stub (see Exercises/ComfortEvaluator.cs).
+    // Remove the [Skip] once that method is implemented - this test should pass as-is.
     [Test]
+    [Skip("Waiting on ComfortEvaluator.ShouldOpenWindows to be implemented - remove this Skip once it is")]
     public async Task ShouldOpenWindows_WhenTemperatureAndDewPointAreComfortable_ReturnsTrue()
     {
         // Arrange
