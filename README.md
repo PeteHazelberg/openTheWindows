@@ -16,6 +16,68 @@ WidgetKit/SwiftUI extension that reads shared state - it can't run .NET code
 directly, but the *decision logic* below is 100% reusable regardless of what
 reads it).
 
+## Getting your machine set up
+
+Follow these steps to prepare your Windows development machine (both ARM64 and x64 are supported).
+
+### 1. Install the .NET 10 SDK
+
+You will need the .NET 10 SDK installed.
+
+- **Via winget (recommended):**
+  ```powershell
+  winget install Microsoft.DotNet.SDK.10
+  ```
+- **Or manual installer:** Download the .NET 10 SDK from [dotnet.microsoft.com/download/dotnet/10.0](https://dotnet.microsoft.com/download/dotnet/10.0) (the installer will automatically detect whether your machine is ARM64 or x64).
+
+### 2. Install the .NET MAUI workload
+
+The MAUI workload installs the platform SDKs and templates for building desktop and mobile UI apps.
+
+> **Important:** This command modifies `Program Files\dotnet` and **must be run in an elevated (Administrator) PowerShell or Windows Terminal**. If run without elevation, it will fail with an error like:
+> `Workload installation failed: ... The operation was canceled by the user.`
+
+Open PowerShell or Terminal **as Administrator** and run:
+
+```powershell
+dotnet workload install maui
+```
+
+*(Note: If you only plan to work on the core logic exercises and unit tests in `OpenTheWindows.Core`, the MAUI workload is not strictly required—only the .NET 10 SDK is needed.)*
+
+### 3. Verify your environment
+
+In a regular PowerShell prompt, verify that .NET 10 and the MAUI workload are recognized:
+
+```powershell
+dotnet --version            # Should display 10.0.xxx
+dotnet --list-sdks          # Confirms the 10.0.xxx SDK path
+dotnet workload list        # Should list 'maui' under Installed Workload Id
+```
+
+### 4. Set up your editor
+
+You can use either Visual Studio 2026 or Visual Studio Code:
+
+#### Option A: Visual Studio 2026 Community (Recommended)
+1. Download and run the Visual Studio 2026 installer from [visualstudio.microsoft.com](https://visualstudio.microsoft.com/).
+2. In the installer workloads tab, check **.NET Multi-platform App UI development**.
+3. Complete installation. Opening `OpenTheWindows.slnx` will provide integrated XAML/Blazor editing, IntelliSense, test runners, and one-click debugging.
+
+#### Option B: Visual Studio Code
+1. Install [Visual Studio Code](https://code.visualstudio.com/).
+2. Install the following extensions from the VS Code Marketplace:
+   - **C# Dev Kit** (`ms-dotnettools.csdevkit`)
+   - **.NET MAUI** (`ms-dotnettools.dotnet-maui`)
+3. Open the `openTheWindows` repository folder. The Solution Explorer in C# Dev Kit will load the projects.
+
+### 5. Clone the repository
+
+```powershell
+git clone https://github.com/PeteHazelberg/openTheWindows.git
+cd openTheWindows
+```
+
 ## Solution layout
 
 ```
@@ -82,8 +144,6 @@ ready to target mobile (remember: any real iOS/iPadOS widget will still need
 a separate native Swift/WidgetKit extension regardless of which of these we
 keep).
 
-## Requirements
+## Weather data source note
 
-- .NET 10 SDK
-- Free NWS API - no key needed, just a descriptive `User-Agent` (see
-  `NwsWeatherGateway`) per NWS's usage policy.
+We use the free National Weather Service API (api.weather.gov). No API key or account is required, but NWS requests a descriptive `User-Agent` header identifying the application (this is already configured in `NwsWeatherGateway`).
