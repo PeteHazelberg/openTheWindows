@@ -16,3 +16,14 @@ The tests exercise the logic in the `Exercises/` folder and are meant to guide a
 - boundary values are handled consistently
 
 These tests are intentionally used as teaching examples and may remain skipped while the beginner writes the matching logic.
+
+## Temporary skips on the two "EXAMPLE" tests
+
+`ShouldOpenWindows_WhenTemperatureAndDewPointAreComfortable_ReturnsTrue` and
+`SelectBestStation_WithOneCandidate_ReturnsIt` are fully-written example tests,
+but they are currently marked `[Skip]` too, because they call the
+`Exercises/ComfortEvaluator.cs` and `Exercises/WeatherStationSelector.cs`
+methods, which are still `NotImplementedException` stubs. This keeps the CI
+build/test gate green in the meantime. **Once those two `Exercises` classes
+are implemented, remove the `[Skip]` from these two example tests** - they
+should then pass without any other changes.

@@ -105,7 +105,9 @@ dotnet run --project src\OpenTheWindows.App.BlazorHybrid -f net10.0-windows10.0.
 
 ## CI workflow
 
-The repository includes a GitHub Actions build/test workflow that runs on pushes and pull requests to `main`. The workflow builds the solution and runs the TUnit project so merge gating stays simple and fast.
+The repository includes a GitHub Actions build/test workflow that runs on pushes and pull requests to `main`. The workflow builds `OpenTheWindows.Core` and the TUnit test project (not the MAUI app, since the CI runner doesn't have the MAUI workload installed) and requires the tests to pass before merging.
+
+Right now all 8 tests in the TUnit project are `[Skip]`-ped or intentionally not yet implemented, since they describe beginner exercises in `src/OpenTheWindows.Core/Exercises/`. As those `Exercises` classes are implemented, remove the matching `[Skip]` attributes so the tests start running for real.
 
 ## Beginner learning goals
 
