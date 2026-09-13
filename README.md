@@ -120,3 +120,7 @@ The project is intentionally structured so a beginner can make progress in small
 5. Write the unit tests that describe the intended behavior.
 
 The `Exercises/` folder is where the human learning work belongs. It is intentionally kept simple and explicit.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE) - a short, permissive open-source license. You're free to use, copy, modify, and distribute this code (including for commercial purposes), as long as you keep the original copyright notice. The software is provided "as is," with no warranty.
