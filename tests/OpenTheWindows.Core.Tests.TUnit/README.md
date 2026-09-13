@@ -8,20 +8,18 @@ The project is deliberately beginner-friendly. TUnit is readable, direct, and fr
 
 ## How this project is used
 
-The tests exercise the logic in the `Exercises/` folder and are meant to guide a beginner through small wins:
+This project has two kinds of tests:
 
-- comfortable conditions return true
-- too-hot or too-cold conditions return false
-- high dew point does not qualify
-- boundary values are handled consistently
+- `Exercises/` tests are intentionally small teaching scenarios for the beginner.
+- `Infrastructure/` tests are fully written, source-generated, and explain how the weather and geocoding plumbing is meant to behave.
 
-These tests are intentionally used as teaching examples and may remain skipped while the beginner writes the matching logic.
+The infrastructure tests are the ones to read first when you want to understand how the app collects, interprets, and caches weather data. The `Exercises/` tests are the human’s assignment, and they may remain skipped while the beginner writes the matching logic.
 
-## Temporary skips on the two "EXAMPLE" tests
+## The exercise tests
 
 `ShouldOpenWindows_WhenTemperatureAndDewPointAreComfortable_ReturnsTrue` and
 `SelectBestStation_WithOneCandidate_ReturnsIt` are fully-written example tests,
-but they are currently marked `[Skip]` too, because they call the
+but they are currently marked `[Skip]` because they call the
 `Exercises/ComfortEvaluator.cs` and `Exercises/WeatherStationSelector.cs`
 methods, which are still `NotImplementedException` stubs. This keeps the CI
 build/test gate green in the meantime. **Once those two `Exercises` classes

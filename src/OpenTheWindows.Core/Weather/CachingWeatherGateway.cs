@@ -17,6 +17,7 @@ public sealed class CachingWeatherGateway : IWeatherGateway
     private readonly IWeatherGateway _innerGateway;
     private readonly TimeSpan _cacheDuration;
     private readonly string _cacheFilePath;
+    private readonly SemaphoreSlim _cacheLock = new(1, 1);
 
     public CachingWeatherGateway(
         IWeatherGateway innerGateway,
@@ -35,24 +36,45 @@ public sealed class CachingWeatherGateway : IWeatherGateway
 
     public async Task<WeatherReading> GetLatestObservationAsync(WeatherStation station, CancellationToken cancellationToken = default)
     {
-        var cacheEntry = await LoadCacheAsync(cancellationToken);
-
-        if (cacheEntry.TryGetValue(station.StationId, out var cachedReading) &&
-            cachedReading.ExpiresAtUtc > DateTimeOffset.UtcNow)
+        await _cacheLock.WaitAsync(cancellationToken);
+        try
         {
-            return cachedReading.WeatherReading;
+            var cacheEntries = await LoadCacheAsync(cancellationToken);
+
+            if (cacheEntries.TryGetValue(station.StationId, out var cachedReading) &&
+                cachedReading.ExpiresAtUtc > DateTimeOffset.UtcNow)
+            {
+                return cachedReading.WeatherReading;
+            }
+
+            var freshReading = await _innerGateway.GetLatestObservationAsync(station, cancellationToken);
+
+            cacheEntries[station.StationId] = new WeatherCacheEntry
+            {
+                ExpiresAtUtc = DateTimeOffset.UtcNow + _cacheDuration,
+                WeatherReading = freshReading,
+            };
+
+            try
+            {
+                await SaveCacheAsync(cacheEntries, cancellationToken);
+            }
+            catch (IOException) when (!cancellationToken.IsCancellationRequested)
+            {
+                // Cache writes are an optimization only. A failed write should not turn
+                // a successful NWS fetch into a user-visible error.
+            }
+            catch (UnauthorizedAccessException) when (!cancellationToken.IsCancellationRequested)
+            {
+                // Same idea: fail the cache quietly, keep the fresh observation.
+            }
+
+            return freshReading;
         }
-
-        var freshReading = await _innerGateway.GetLatestObservationAsync(station, cancellationToken);
-
-        cacheEntry[station.StationId] = new WeatherCacheEntry
+        finally
         {
-            ExpiresAtUtc = DateTimeOffset.UtcNow + _cacheDuration,
-            WeatherReading = freshReading,
-        };
-
-        await SaveCacheAsync(cacheEntry, cancellationToken);
-        return freshReading;
+            _cacheLock.Release();
+        }
     }
 
     private static string GetDefaultCacheFilePath()

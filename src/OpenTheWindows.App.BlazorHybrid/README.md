@@ -10,7 +10,7 @@ We are starting with a Windows desktop app, and Blazor Hybrid gives us a fast pa
 
 - The UI is intentionally minimal: a simple form for zip code and comfort ranges, and a button to check whether the windows should be open.
 - The app reads from the Core library instead of embedding decision logic in components.
-- Weather access goes through a small cache decorator so repeated checks during local development do not keep re-fetching the external NWS API.
+- Weather access goes through a small cache decorator for the latest observation lookup so repeated checks during local development do not keep re-fetching the same NWS observation data.
 
 ## Future direction
 

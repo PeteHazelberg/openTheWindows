@@ -101,7 +101,7 @@ The project intentionally keeps the UI thin and the decision logic separate from
 
 This repo uses the free National Weather Service API (`api.weather.gov`) and does not require an API key. The app also has a small file-backed cache wrapper that stores recent weather observations locally and refreshes them after a configurable window (default: 30 minutes).
 
-This avoids repeatedly hitting the external weather service during local development, unit testing, and repeated user checks.
+Only the latest-observation lookup is cached. Geographic station discovery (`GetNearbyStationsAsync`) still calls the NWS points/stations endpoints when the user checks a new location, so the app stays accurate and up to date while avoiding unnecessary repeated observation lookups.
 
 ## Building and testing
 
@@ -120,9 +120,12 @@ dotnet run --project src\OpenTheWindows.App.BlazorHybrid -f net10.0-windows10.0.
 
 ## CI workflow
 
-The repository includes a GitHub Actions build/test workflow that runs on pushes and pull requests to `main`. The workflow builds `OpenTheWindows.Core` and the TUnit test project (not the MAUI app, since the CI runner doesn't have the MAUI workload installed) and requires the tests to pass before merging.
+The repository includes a GitHub Actions workflow that runs on pushes and pull requests to `main`. It has two required checks:
 
-Right now all 8 tests in the TUnit project are `[Skip]`-ped or intentionally not yet implemented, since they describe beginner exercises in `src/OpenTheWindows.Core/Exercises/`. As those `Exercises` classes are implemented, remove the matching `[Skip]` attributes so the tests start running for real.
+1. a Linux job that restores/builds the TUnit project and runs the real test suite
+2. a Windows job that installs the MAUI workload and builds the full solution, which catches any app-shell or MAUI registration breakage that the TUnit project alone would miss
+
+The beginner `Exercises/` tests may remain `[Skip]`-ped while the student writes the matching logic, but the infrastructure tests in `tests/OpenTheWindows.Core.Tests.TUnit/Infrastructure/` are intended to stay active and enforce real regression protection.
 
 ## Beginner learning goals
 
