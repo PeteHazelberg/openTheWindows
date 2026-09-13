@@ -123,7 +123,7 @@ dotnet run --project src\OpenTheWindows.App.BlazorHybrid -f net10.0-windows10.0.
 The repository includes a GitHub Actions workflow that runs on pushes and pull requests to `main`. It has two required checks:
 
 1. a Linux job that restores/builds the TUnit project and runs the real test suite
-2. a Windows job that installs the MAUI workload and builds the full solution, which catches any app-shell or MAUI registration breakage that the TUnit project alone would miss
+2. a Windows job that installs the Windows MAUI workload and builds the Blazor Hybrid app for `win-x64`, which catches any app-shell or MAUI registration breakage that the TUnit project alone would miss
 
 The beginner `Exercises/` tests may remain `[Skip]`-ped while the student writes the matching logic, but the infrastructure tests in `tests/OpenTheWindows.Core.Tests.TUnit/Infrastructure/` are intended to stay active and enforce real regression protection.
 

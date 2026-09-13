@@ -41,11 +41,11 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Install MAUI workload
-        run: dotnet workload install maui --ignore-failed-sources
+      - name: Install Windows MAUI workload
+        run: dotnet workload install maui-windows --ignore-failed-sources
 
-      - name: Restore solution
-        run: dotnet restore OpenTheWindows.slnx
+      - name: Restore Blazor Hybrid app for win-x64
+        run: dotnet restore src/OpenTheWindows.App.BlazorHybrid/OpenTheWindows.App.BlazorHybrid.csproj -r win-x64
 
       - name: Build Blazor Hybrid app
-        run: dotnet build OpenTheWindows.slnx --configuration Release --no-restore
+        run: dotnet build src/OpenTheWindows.App.BlazorHybrid/OpenTheWindows.App.BlazorHybrid.csproj --configuration Release -r win-x64 --no-restore
