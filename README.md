@@ -58,7 +58,22 @@ You can use either Visual Studio 2026 or VS Code.
 
 - Install Visual Studio 2026 Community.
 - In the installer, include the `.NET Multi-platform App UI development` workload.
+- **Also confirm the C++ build tools are selected** - see the troubleshooting note below before you finish the installer.
 - Open `OpenTheWindows.slnx` in the repo.
+
+##### Troubleshooting: MSVC/C++ build error when building the MAUI app in Visual Studio
+
+Installing the MAUI workload from the command line (`dotnet workload install maui`) is enough to build `OpenTheWindows.Core` and run tests, but it is **not** enough to build the Windows MAUI app head inside Visual Studio. The Windows MAUI/WinUI build also needs the native C++ toolchain, which only the Visual Studio installer provides. If you skip it, you'll hit a confusing build error mentioning MSVC.
+
+To fix it, open the **Visual Studio Installer** (Start menu -> "Visual Studio Installer"), click **Modify** on your Visual Studio 2026 install, and make sure these are checked:
+
+1. Workload: **.NET Multi-platform App UI development** (should already be checked)
+2. Under that workload's **Installation details** panel on the right, confirm these individual components are checked:
+   - **MSVC v143 - VS 2026 C++ build tools** (matching your machine's architecture - x64 or ARM64)
+   - A recent **Windows 11 SDK** (e.g. 10.0.22621.0 or newer)
+3. Click **Modify** to install the missing pieces, then restart Visual Studio.
+
+If you're on an ARM64 machine, double-check the installer is adding the **ARM64** MSVC build tools, not just x64 - Visual Studio 2026 should pick this automatically based on your machine, but it's worth confirming in the installer's summary before clicking Modify.
 
 #### VS Code
 
